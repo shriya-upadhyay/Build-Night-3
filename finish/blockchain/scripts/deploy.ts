@@ -9,7 +9,7 @@ async function main() {
     
     console.log("Account balance:", ethers.formatEther(balance));
   
-    const Token = await ethers.getContractFactory("Trojan");
+    const Token = await ethers.getContractFactory("Turtle");
     const token = await Token.deploy();
     
     await token.waitForDeployment();

@@ -205,6 +205,147 @@ function getTokenInfo() public view returns (string memory, string memory, uint2
 This is a view function that returns the value of data members of our token using ERC-20 functions.
 
 
+### Deploy Script
+Create a folder called scripts within the blockchain folder and add a file to it called deploy.ts
+
+Copy the following code into it:
+
+```solidity
+
+import { ethers } from "hardhat";
+
+async function main() {
+    const [deployer] = await ethers.getSigners();
+  
+    console.log("Deploying contracts with the account:", deployer.address);
+  
+    const balance = await ethers.provider.getBalance(deployer.address);
+    
+    console.log("Account balance:", ethers.formatEther(balance));
+  
+    const Token = await ethers.getContractFactory("Turtle");
+    const token = await Token.deploy();
+    
+    await token.waitForDeployment();
+    const tokenAddress = await token.getAddress();
+  
+    console.log("Token address:", tokenAddress);
+}
+  
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+});
+
+```
+
+
+### Update your hardhat.config.ts 
+
+Update your hardhat.config.ts to look like this
+
+```solidity
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+import { config as dotenvConfig } from "dotenv";
+
+dotenvConfig();
+
+const Private_Key = process.env.PRIVATE_KEY;
+const API_URL= process.env.API_URL;
+
+if (!Private_Key || !API_URL) {
+  throw new Error("Missing PRIVATE_KEY or API_URL in .env file");
+}
+
+const config: HardhatUserConfig = {
+  solidity: "0.8.27",
+  networks: {
+    sepolia: {
+      url: `${API_URL}`,
+      accounts: [`0x${Private_Key}`],
+      chainId: 11155111,
+    },
+  },
+};
+
+export default config;
+```
+
+### Run and Deploy Smart Contract
+Run `npx hardhat compile` to compile the smart contract
+
+Run `npx hardhat run scripts/deploy.ts --network sepolia` to run the script to deploy the smart contract
+
+You should see an output like:
+
+>Deploying contracts with the account: 0xE19496E993F05Ec1B03D1d456dF6B8227E50deA1
+>Account balance: 1.139776643967059959
+>Token address: 0x065d4BE841d9CA4B1906Fea6a013e5f16c51FB51
+
+You can view your transaction at https://sepolia.etherscan.io/ by copy pasting the address into the search bar
+
+*_Save_* your token address, we’ll use it again later!
+
+
+### Integrate with Frontend
+
+Navigate to frontend folder in terminal
+
+Run `npm install`
+
+Run `npm install ethers@5`
+
+Run `npm run start` to view current frontend of our page
+
+Copy the **TokenName.json** file from the artifacts/contracts folder in the blockchain folder into the src/app folder in the frontend
+
+Add import token from "./TokenName.json"; into the top of the src/app/page.tsx file
+
+At the top of the Home() function, add the following code:
+
+```soldity
+const [contract, setContract] = useState();
+const contractAddress = "<YOUR_CONTRACT_ADDRESS>";
+let signer;
+```
+
+#### Update the OnClickConnect function
+Store information about the signer, contract abi, and contract address when instantiating the contract object
+
+Update your onClickConnect function to appear like the one below:
+
+
+```solidity
+
+const onClickConnect = async () => {
+    if (!window.ethereum) {
+      alert("please install MetaMask");
+      return;
+    }
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    provider
+      .send("eth_requestAccounts", [])
+      .then((accounts) => {
+        if (accounts.length > 0) setCurrentAccount(accounts[0]);
+      })
+      .catch((e) => console.log(e));
+
+    signer = provider.getSigner();
+
+    setContract(new ethers.Contract(contractAddress, token.abi, signer));
+  };
+
+
+```
+
+### Frontend Javascript Functions
+
+
+
+
 
 
 

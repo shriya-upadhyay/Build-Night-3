@@ -341,11 +341,155 @@ const onClickConnect = async () => {
 
 ```
 
-### Frontend Javascript Functions
+## Frontend Javascript Functions
 
 
+### Get Token Info
+
+Add the following function to your export default Home function:
+
+```solidity
+const fetchTokenData = async () => {
+    if (contract) {
+      const name = await contract.name();
+      const symbol = await contract.symbol();
+      const totalSupply = await contract.totalSupply();
+      const userBalance = await contract.balanceOf(currentAccount || '');
+
+      const formattedSupply = ethers.utils.formatUnits(totalSupply, 18);
+      const formattedBalance = ethers.utils.formatUnits(userBalance, 18);
 
 
+      setTokenData({
+        name,
+        symbol,
+        totalSupply: formattedSupply, // Convert to string if necessary
+        userBalance: formattedBalance, // Convert to string if necessary
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchTokenData();
+  }, [contract, currentAccount]);
+```
+
+We first extract the key data members from our ERC-20 smart contract: name, symbol, totalSupply, and the current account's balance. These data members are inherited in our contract from the ERC-20 template.
+
+Convert the totalSupply and userBalance from their raw BigNumber into human-readable strings since the balance of a token is typically in 18 digits.
+
+Update our token object with the new data members we received from our contract. These updates reflect in the frontend of our website.
+
+Lastly, add a useEffect function that will force token data to be fetched again from our contract every time our contract is recompile/redeployed or current account is changed (a new user signs in).
+
+### Mint Tokens
+
+Copy the following mint tokens function into your export default home function: 
+
+```solidity
+const mintTokens = async (e) => {
+    e.preventDefault();
+    if (contract== undefined) {
+      alert("Please connect to MetaMask");
+      return;
+    }
+
+    try {
+      // Convert the mint amount to a BigNumber using ethers
+      const amountToMint = ethers.utils.parseUnits(mintAmount, 18); // Assuming 18 decimals
+  
+      const tx = await contract.mint(currentAccount, amountToMint);
+  
+      await tx.wait(); 
+      fetchTokenData();
+      console.log("Minting successful", amountToMint.toString());
+    } catch (error) {
+      console.error("Minting failed:", error);
+    }
+
+
+  };
+
+```
+
+- This function begins by preventing page refresh. 
+- Then, we ensure that the user's MetaMask wallet is connected and the contract object has been initialized properly
+- It then parses the user's string input to a BigNumber with 18 digits, which is the units that our smart contract reads/stores token amounts in. 
+- Then, we call our contract's mint function and wait for it to be confirmed. 
+- Then, we update the token information so the changes are reflected in our frontend.
+
+
+### Burn Tokens
+Copy the following burn tokens function into your export default home function: 
+
+```solidity
+const burnTokens = async (e) => {
+    e.preventDefault();
+    if (contract== undefined) {
+      alert("Please connect to MetaMask");
+      return;
+    }
+
+    try {
+      // Convert the mint amount to a BigNumber using ethers
+      const amountToBurn = ethers.utils.parseUnits(burnAmount, 18); // Assuming 18 decimals
+  
+      // Call the mint function with the current account and amount
+      const tx = await contract.burn(amountToBurn);
+  
+      await tx.wait(); // Wait for the transaction to be mined
+      fetchTokenData();
+      console.log("Burning successful", amountToBurn.toString());
+  
+      // Optionally: Fetch updated token data or inform the user of success
+    } catch (error) {
+      console.error("Burning failed:", error);
+    }
+
+
+  };
+```
+
+- This function begins by preventing page refresh.
+- Then, we ensure that the user's MetaMask wallet is connected and the contract object has been initialized properly
+- It then parses the user's string input to a BigNumber with 18 digits, which is the units that our smart contract reads/stores token amounts in. 
+- Then, we call our contract's burn tokens function and wait for it to be confirmed. 
+- Then, we update the token information so the changes are reflected in our frontend.
+
+### Send tokens
+Copy the following send tokens function into your export default home function: 
+
+```solidity
+const sendTokens = async (e) => {
+    e.preventDefault();
+    if (contract== undefined) {
+      alert("Please connect to MetaMask");
+      return;
+    }
+
+    try {
+      // Convert the send amount to a BigNumber using ethers
+      const amountToSend = ethers.utils.parseUnits(sendAmount, 18); 
+  
+      const tx = await contract.transfer(sendAccount, amountToSend);
+  
+      await tx.wait(); 
+      fetchTokenData();
+      console.log("Sending successful", amountToSend.toString());
+  
+    } catch (error) {
+      console.error("Sending failed:", error);
+    }
+
+  };
+
+```
+
+- This function begins by preventing page refresh.
+- Then, we ensure that the user's MetaMask wallet is connected and the contract object has been initialized properly
+- It then parses the user's string input to a BigNumber with 18 digits, which is the units that our smart contract reads/stores token amounts in. 
+- Then, we call our contract's send tokens function and wait for the transaction to be confirmed. 
+- Then, we update the token information so the changes are reflected in our frontend.
 
 
 

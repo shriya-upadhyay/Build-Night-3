@@ -6,7 +6,7 @@ import { ethers, Contract } from "ethers";
 
 
 export default function Home() {
-  const [contract, setContract] = useState<Contract | null>(null);
+
   const [currentAccount, setCurrentAccount] = useState<string | null>(null);
   const [tokenData, setTokenData] = useState({
     name: '',
@@ -19,8 +19,7 @@ export default function Home() {
   const [burnAmount, setburnAmount] = useState('');
   const [sendAccount, setsendAccount] = useState('');
   const [sendAmount, setsendAmount] = useState('');
-  const contractAddress = "0x420d54bD52AaeCa1b33575ECDdE502b0f8E400e2";
-  let signer;
+  
 
 
   const onClickConnect = async () => {

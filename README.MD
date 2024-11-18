@@ -493,6 +493,14 @@ const sendTokens = async (e) => {
 
 
 
+### Congrats on your new Token!! 🥳
+
+Practice minting your tokens and sharing them with your friends :) 
+
+📌 Note: You might need to import the token into your wallet using the token's contract address before you can see your balance :!
+
+
+
 
 
 
